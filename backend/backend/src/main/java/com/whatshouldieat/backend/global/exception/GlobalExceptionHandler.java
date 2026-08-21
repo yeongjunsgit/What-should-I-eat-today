@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.management.MalformedObjectNameException;
 
@@ -86,5 +87,32 @@ public class GlobalExceptionHandler {
         return fieldError.getField() + ": " + fieldError.getDefaultMessage();
     }
 
-    
+
+    // handleValidation는 DTO에서 설정한 Validation만 추적하여 400 에러를 보내준다.
+    // 하지만 @PathVariable UUID id 부분에서 UUID로 주소의 값을 변환할 때 잘못되었을 경우는 DTO의 validation이 추적할 수 없기 때문에 MethodArgumentTypeMismatchException를 추적하는 메서드를 만든다.
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch (
+            MethodArgumentTypeMismatchException exception
+    ) {
+        // HTTP 400으로 상태코드 지정
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        // .getName() 을 통해 변환에 실패한 매개변수의 이름을 가져온다.
+        String message = exception.getName()
+                + "의 값이 올바른 형식이 아닙니다. 입력값 = "
+                // .getValue()를 통해 사용자가 실제로 전달한 값을 가져온다.
+                + exception.getValue();
+
+        // of()로 시간을 추가한 response 제작
+        ErrorResponse response = ErrorResponse.of(
+                status.value(),
+                "INVALID_PARAMETER",
+                message
+        );
+
+        // 반환
+        return ResponseEntity.status(status).body(response);
+    }
+
+
 }
