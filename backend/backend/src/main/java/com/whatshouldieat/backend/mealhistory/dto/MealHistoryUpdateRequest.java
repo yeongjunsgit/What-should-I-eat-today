@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public record MealHistoryUpdateRequest (
     @NotBlank
     @Size(max = 100)
-    String foodname,
+    String foodName,
 
     @Size(max = 50)
     String category,

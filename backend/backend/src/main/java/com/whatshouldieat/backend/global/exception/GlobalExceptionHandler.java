@@ -4,13 +4,12 @@ package com.whatshouldieat.backend.global.exception;
 import com.whatshouldieat.backend.mealhistory.exception.MealHistoryNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
-import javax.management.MalformedObjectNameException;
 
 // @RestControllerAdvice = REST Controller에서 발생하는 예외를 공통적으로 처리하는 클래스임을 나타내는 어노테이션
 // Controller에서 예외가 발생하면, GlobalExceptionHandler가 확인하며, 일치하는 @ExceptionHandler를 실행하여 응답을 반환하게 한다.
@@ -41,9 +40,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(response);
     }
 
-    // Controller 에서 @Valid가 DTO 검증조건을 확인하고 이에 맞지 않으면 MalformedObjectNameException을 발생시킨다.
+    // Controller 에서 @Valid가 DTO 검증조건을 확인하고 이에 맞지 않으면 MethodArgumentNotValidException 발생시킨다.
     // 이때 handleValidation 메서드가 발동되도록 ExceptionHandler 어노테이션을 세팅
-    @ExceptionHandler(MalformedObjectNameException.class)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException exception
     ) {
@@ -112,6 +111,27 @@ public class GlobalExceptionHandler {
 
         // 반환
         return ResponseEntity.status(status).body(response);
+    }
+
+    // 현재 handleValidation()은 DTO가 validation을 어겼을 경우애 작동한다.
+    // 하지만 JSON 문법에 틀리거나, 날짜 형식이 잘못됐을 경우, DTO 변환 자체를 실패하며, 그러면 DTO의 validation 검증이 어렵다
+    // HttpMessageNotReadableException를 통해 JSON 형식이나 필드 타입을 검증하고 에러가 나면 발생하는 예외를 제어한다.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable (
+            HttpMessageNotReadableException exception
+    ) {
+        // 400 상태코드를 status로 지정
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        // ErrorResponse인 response에 메세지와 HTTP 상태코드를 담는다.
+        ErrorResponse response = ErrorResponse.of(
+                status.value(),
+                "INVALID_REQUEST_BODY",
+                "요청 본문의 JSON 형식이나 필드 타입이 올바르지 않습니다."
+        );
+
+        return ResponseEntity.status(status).body(response);
+
     }
 
 

@@ -96,7 +96,7 @@ public class MealHistoryService {
 
         // 해당 게시물을 request에 들어있는 필드값들로 PUT한다.
         mealHistory.update(
-                request.foodname(),
+                request.foodName(),
                 request.category(),
                 request.price(),
                 request.rating(),
