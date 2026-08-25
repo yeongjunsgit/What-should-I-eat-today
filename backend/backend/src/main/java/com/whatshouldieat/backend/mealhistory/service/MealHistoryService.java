@@ -56,22 +56,23 @@ public class MealHistoryService {
     // @Transactional은 여러 개의 DB 작업을 하나의 작업 단위로 묶어준다.
     // 거기에 readonly 조건을 걸어 해당 트랜잭션이 읽기전용이라는 걸 JPA에게 알려준다.
     // 기능자체를 제한하는 권한은 없으므로 유의
-    @Transactional(readOnly = true)
-    public List<MealHistoryResponse> findAll() {
-        return mealHistoryRepository
-                // repository에서 제작한 메서드로, 모든 값을 조회하여 정렬해서 반환하는 요청
-                .findAllByOrderByAteAtDescCreatedAtDesc()
-                // 목록의 데이터를 순서대로 처리한다.
-                .stream()
-                // 각각의 MealHistory를 MealHistoryResponse로 변환
-                // 아래의 문법은 람다식의 축약으로 원래 코드는 아래와 같다.
-                /*
-                .map(mealHistory -> MealHistoryResponse.from(mealHistory)
-                */
-                .map(MealHistoryResponse::from)
-                // 변환된 결과를 새로운 List로 생성
-                .toList();
-    }
+    // 페이징을 하지 않는 기존 findAll()을 삭제
+//    @Transactional(readOnly = true)
+//    public List<MealHistoryResponse> findAll() {
+//        return mealHistoryRepository
+//                // repository에서 제작한 메서드로, 모든 값을 조회하여 정렬해서 반환하는 요청
+//                .findAllByOrderByAteAtDescCreatedAtDesc()
+//                // 목록의 데이터를 순서대로 처리한다.
+//                .stream()
+//                // 각각의 MealHistory를 MealHistoryResponse로 변환
+//                // 아래의 문법은 람다식의 축약으로 원래 코드는 아래와 같다.
+//                /*
+//                .map(mealHistory -> MealHistoryResponse.from(mealHistory)
+//                */
+//                .map(MealHistoryResponse::from)
+//                // 변환된 결과를 새로운 List로 생성
+//                .toList();
+//    }
 
     // 페이징 기능을 추가한 findAll()을 추가한다.
     @Transactional(readOnly = true)

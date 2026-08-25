@@ -18,7 +18,8 @@ public interface MealHistoryRepository
     // 이름이 아주 특이한 메서드로 인자도, 어떠한 구현도 하지않았다(이건 인터페이스라서)
     // 하지만 이름을 보면 이 메서드가 하는 역할을 알 수 있다.
     // findAll = 전체조회, OrderBy = 정렬한다, AteAtDesc = ateAt값을 내림차순으로, CreatedAtDesc = 앞조건이 같다면 생성날짜를 내림차순으로
-    List<MealHistory> findAllByOrderByAteAtDescCreatedAtDesc();
+    // 페이징 하지 않는 기존의 findAllByOrderByAteAtDescCreatedAtDesc을 삭제
+//    List<MealHistory> findAllByOrderByAteAtDescCreatedAtDesc();
 
     // 현재 따로 구현하는 메서드가 없다. 그러나 정상 작동할 예정이다.
     // 그 이유는 바로 JPA가 interface를 발견하고, 이에 대한 구현 객체를 자동으로 생성하기 때문이다.
