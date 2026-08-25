@@ -3,8 +3,11 @@ package com.whatshouldieat.backend.mealhistory.controller;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryCreateRequest;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryResponse;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryUpdateRequest;
+import com.whatshouldieat.backend.mealhistory.dto.PageResponse;
 import com.whatshouldieat.backend.mealhistory.service.MealHistoryService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,10 +41,17 @@ public class MealHistoryController {
     }
 
     // Get 메서드를 통해 모든 회원 정보를 얻는 finaAll() 메서드
+    // 페이징 방식으로 변경
     @GetMapping
-    public ResponseEntity<List<MealHistoryResponse> > findAll() {
+    public ResponseEntity<PageResponse<MealHistoryResponse> > findAll(
+            // Pageable값의 Default를 정할때 사용하는 어노테이션이다.
+            // pageable은 놀랍게도 Spring에서 URL에 적혀있는 값을 보고 알아서 만들어서 넣어준다.
+            // ex) GET /api/meal-histories?page=1&size=5 = page = 1, size = 5
+            @PageableDefault(page = 0, size = 10)
+            Pageable pageable
+    ) {
         // Service 에서 선언한 findAll()을 호출하여 Response를 담은 List를 담는다.
-        List<MealHistoryResponse> responses = mealHistoryService.findAll();
+        PageResponse<MealHistoryResponse> responses = mealHistoryService.findAll(pageable);
 
         // HTTP 200 OK와 함께 responses에 들어있는 List<MealHistoryResponse> 를 반환
         return ResponseEntity.ok(responses);

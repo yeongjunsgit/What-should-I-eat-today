@@ -1,6 +1,8 @@
 package com.whatshouldieat.backend.mealhistory.repository;
 
 import com.whatshouldieat.backend.mealhistory.domain.MealHistory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -27,6 +29,14 @@ public interface MealHistoryRepository
     // delete({entity}) = 인자로 들어온 entity와 일치하는 ID값을 가진 값을 DB에서 제거
     // deleteById({id 값}) = 인자로 들어온 id 값과 일치하는 값을 DB에서 제거
     // count() = 개수 조회
+
+    // 페이징을 이용하기 위한 Repository 메서드로 Pageable을 인자로 받는다. 이때 Page에서 정한 제네릭 타입을 MealHistory로 한다.
+    // Pageable은 페이지 조회 조건에 대한 정보를 담고 있다. (몇번째 페이지인지, 페이지 당 몇개를 조회하는지, 어떤 기준으로 정렬하는지)
+    // 그러나 현재 메서드 명에서 정렬하는 기준을 적어 두었기 때문에, 따로 정렬기준은 제공하지 않는다.
+
+    Page<MealHistory> findAllByOrderByAteAtDescCreatedAtDesc(
+            Pageable pageable
+    );
 
 
 

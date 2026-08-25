@@ -4,8 +4,11 @@ import com.whatshouldieat.backend.mealhistory.domain.MealHistory;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryCreateRequest;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryResponse;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryUpdateRequest;
+import com.whatshouldieat.backend.mealhistory.dto.PageResponse;
 import com.whatshouldieat.backend.mealhistory.exception.MealHistoryNotFoundException;
 import com.whatshouldieat.backend.mealhistory.repository.MealHistoryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +72,25 @@ public class MealHistoryService {
                 // 변환된 결과를 새로운 List로 생성
                 .toList();
     }
+
+    // 페이징 기능을 추가한 findAll()을 추가한다.
+    @Transactional(readOnly = true)
+    public PageResponse<MealHistoryResponse> findAll(
+            Pageable pageable
+    ) {
+
+        Page<MealHistoryResponse> page =
+                // mealHistoryRepository의 findAllByOrderByAteAtDescCreatedAtDesc()에 인자를 넣으면 알아서 Page<>를 반환하는 메서드로 매칭된다.
+                mealHistoryRepository
+                        .findAllByOrderByAteAtDescCreatedAtDesc(pageable)
+                        // Page에도 map 메서드가 존재하기 때문에 여기에 map 메서드를 사용할 수 있다. map() 을 통해 모든 mealHistory를 MealHistoryResponse로 변환한다.
+                        .map(MealHistoryResponse::from);
+
+        // Page<MealHistoryResponse>를 반환한다.
+        return PageResponse.from(page);
+    }
+
+
 
     // readOnly Transactional 어노테이션을 부여
     @Transactional(readOnly = true)
