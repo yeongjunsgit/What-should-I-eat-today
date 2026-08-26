@@ -14,3 +14,10 @@ spring:
 
   flyway:
     enabled: true
+
+
+  data:
+    web:
+      # 페이징 할 때 요청을 조작하여 페이지 값을 말도안도는 높은 값으로 늘릴것을 방지하기위해 최대 페이지 사이즈를 100으로 임시 제한
+      pageable:
+        max-page-size: 100
