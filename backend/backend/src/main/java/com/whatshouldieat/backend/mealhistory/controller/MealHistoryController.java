@@ -42,8 +42,12 @@ public class MealHistoryController {
 
     // Get 메서드를 통해 모든 회원 정보를 얻는 finaAll() 메서드
     // 페이징 방식으로 변경
+    // + category를 받아 카테고리 필터링 기능을 추가
     @GetMapping
     public ResponseEntity<PageResponse<MealHistoryResponse> > findAll(
+            // @RequestParam = URL의 Query Parameter중 category 값을 가져온다. 추가로 필수 파라미터가 아니라고 추가로 명시했다.
+            @RequestParam(required = false)
+            String category,
             // Pageable값의 Default를 정할때 사용하는 어노테이션이다.
             // pageable은 놀랍게도 Spring에서 URL에 적혀있는 값을 보고 알아서 만들어서 넣어준다.
             // ex) GET /api/meal-histories?page=1&size=5 = page = 1, size = 5
@@ -51,7 +55,8 @@ public class MealHistoryController {
             Pageable pageable
     ) {
         // Service 에서 선언한 findAll()을 호출하여 Response를 담은 List를 담는다.
-        PageResponse<MealHistoryResponse> responses = mealHistoryService.findAll(pageable);
+        // 이때 인자로 들어가는 category와 pageable은 필터링과 페이징 기능을 이용하기 위해서 넣는것이다.
+        PageResponse<MealHistoryResponse> responses = mealHistoryService.findAll(category, pageable);
 
         // HTTP 200 OK와 함께 responses에 들어있는 List<MealHistoryResponse> 를 반환
         return ResponseEntity.ok(responses);

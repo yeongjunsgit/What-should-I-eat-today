@@ -40,5 +40,10 @@ public interface MealHistoryRepository
     );
 
 
+    // 해당 메서드는 category 값을 기준으로 필터링 한 결과값을 조회하는 메서드이다. 페이징이 구현되어야하여 Pageable 값을 받고, 필터링 기준인 category 값을 받는다.
+    Page<MealHistory> findAllByCategoryOrderByAteAtDescCreatedAtDesc(
+            String category,
+            Pageable pageable
+    );
 
 }
