@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,21 +76,21 @@ public class MealHistoryService {
 //    }
 
     // 페이징 기능을 추가한 findAll()을 추가한다.
-    @Transactional(readOnly = true)
-    public PageResponse<MealHistoryResponse> findAll(
-            Pageable pageable
-    ) {
-
-        Page<MealHistoryResponse> page =
-                // mealHistoryRepository의 findAllByOrderByAteAtDescCreatedAtDesc()에 인자를 넣으면 알아서 Page<>를 반환하는 메서드로 매칭된다.
-                mealHistoryRepository
-                        .findAllByOrderByAteAtDescCreatedAtDesc(pageable)
-                        // Page에도 map 메서드가 존재하기 때문에 여기에 map 메서드를 사용할 수 있다. map() 을 통해 모든 mealHistory를 MealHistoryResponse로 변환한다.
-                        .map(MealHistoryResponse::from);
-
-        // Page<MealHistoryResponse>를 반환한다.
-        return PageResponse.from(page);
-    }
+//    @Transactional(readOnly = true)
+//    public PageResponse<MealHistoryResponse> findAll(
+//            Pageable pageable
+//    ) {
+//
+//        Page<MealHistoryResponse> page =
+//                // mealHistoryRepository의 findAllByOrderByAteAtDescCreatedAtDesc()에 인자를 넣으면 알아서 Page<>를 반환하는 메서드로 매칭된다.
+//                mealHistoryRepository
+//                        .findAllByOrderByAteAtDescCreatedAtDesc(pageable)
+//                        // Page에도 map 메서드가 존재하기 때문에 여기에 map 메서드를 사용할 수 있다. map() 을 통해 모든 mealHistory를 MealHistoryResponse로 변환한다.
+//                        .map(MealHistoryResponse::from);
+//
+//        // Page<MealHistoryResponse>를 반환한다.
+//        return PageResponse.from(page);
+//    }
 
     // 페이징 기능과 category 필터를 추가한 findAll()을 작성한다.
     @Transactional(readOnly = true)
@@ -118,6 +119,37 @@ public class MealHistoryService {
         // Page<MealHistoryResponse>를 반환한다.
         return PageResponse.from(page);
     }
+
+    // 기간을 바탕으로 필터링 할 수 있는 기능을 추가한 findAll
+    @Transactional(readOnly = true)
+    public PageResponse<MealHistoryResponse> findAll(
+            // 인자로 LocalDate from과 to를 추가로 받음
+            String category,
+            LocalDate from,
+            LocalDate to,
+            Pageable pageable
+    ) {
+        // 삼항 연산자를 이용하여 category가 주어졌는지 여부를 판단하고, 만약에 없다면 null을 있다면 .strip()하여 저장
+        String normalizedCategory =
+                category == null || category.isBlank()
+                        ? null
+                        : category.strip();
+
+        // Repository에 작성한 findAllWithFilters()를 사용하여 from과 to 사이에 ateAt이 존재하는 값만 찾아 MealHistory들을 MealHistoryResponse로 map을 이용해 전부 변환
+        Page<MealHistoryResponse> responsePage =
+                mealHistoryRepository
+                        .findAllWithFilters(
+                                normalizedCategory,
+                                from,
+                                to,
+                                pageable
+                        )
+                        .map(MealHistoryResponse::from);
+        // MealHistoryResponse들을 PageResponse로 변환하여 반환
+        return PageResponse.from(responsePage);
+
+    }
+
 
 
 

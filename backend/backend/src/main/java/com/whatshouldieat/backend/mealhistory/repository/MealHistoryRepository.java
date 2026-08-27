@@ -1,10 +1,15 @@
 package com.whatshouldieat.backend.mealhistory.repository;
 
 import com.whatshouldieat.backend.mealhistory.domain.MealHistory;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,6 +48,29 @@ public interface MealHistoryRepository
     // 해당 메서드는 category 값을 기준으로 필터링 한 결과값을 조회하는 메서드이다. 페이징이 구현되어야하여 Pageable 값을 받고, 필터링 기준인 category 값을 받는다.
     Page<MealHistory> findAllByCategoryOrderByAteAtDescCreatedAtDesc(
             String category,
+            Pageable pageable
+    );
+
+    // 여태까지 위의 메소드들은 메소드의 이름을 보고 JPA가 Query문을 작성해주었다. 그렇기 때문에 별다른 SQL문을 작성하지 않아도 DB에서 값을 꺼내올 수 있었다.
+    // 그러나, 조건이 너무 많아지면 메소드 명이 너무 길어지게 되고 이는 유지보수측면이나, 사용면에서 불편함을 일으킬 수 있다. 이를 방지하기 위해서 메소드명을 이용하지 않고
+    // 직접 Query문을 작성할 수 있게 해줄 수 있는데 이것이 @Query 어노테이션이다.
+    // 단, 작성한 Query문은 JPQL이기 때문에 그대로 사용하는 것은 아니고, 이를 JPA가 SQL로 변환하여 요청하게된다.
+    // JPQL은 SQL과 문법이 조금 차이가 나며 아래에서 보이듯이, Java에서 사용하는 필드명을 사용한다.
+    // Query문 중 COALESCE()는 인자로 들어간 값 중 NULL이 아닌 더 앞에 있는 값을 반환한다.
+    @Query("""
+            SELECT m
+            FROM MealHistory m
+            WHERE (:category IS NULL OR m.category = :category)
+              AND m.ateAt >= COALESCE(:fromDate, m.ateAt)
+              AND m.ateAt <= COALESCE(:toDate, m.ateAt)
+            ORDER BY m.ateAt DESC, m.createdAt DESC
+            """)
+    Page<MealHistory> findAllWithFilters(
+            // @Param 어노테이션은 위의 Query 문에서 :{필드명}으로 값을 비교하고 있는데, 이를 매칭시켜주는데 사용하는 어노테이션이다.
+            // 반드시 위에 필드명과 괄호안의 필드명이 동일해야만 매칭된다. 매칭이 되어야 Query가 정상적으로 돌아간다!
+            @Param("category") String category,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
             Pageable pageable
     );
 
