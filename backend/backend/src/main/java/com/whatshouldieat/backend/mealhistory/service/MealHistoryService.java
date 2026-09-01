@@ -5,6 +5,7 @@ import com.whatshouldieat.backend.mealhistory.dto.MealHistoryCreateRequest;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryResponse;
 import com.whatshouldieat.backend.mealhistory.dto.MealHistoryUpdateRequest;
 import com.whatshouldieat.backend.mealhistory.dto.PageResponse;
+import com.whatshouldieat.backend.mealhistory.exception.InvalidDateRangeException;
 import com.whatshouldieat.backend.mealhistory.exception.MealHistoryNotFoundException;
 import com.whatshouldieat.backend.mealhistory.repository.MealHistoryRepository;
 import org.springframework.data.domain.Page;
@@ -93,32 +94,32 @@ public class MealHistoryService {
 //    }
 
     // 페이징 기능과 category 필터를 추가한 findAll()을 작성한다.
-    @Transactional(readOnly = true)
-    public PageResponse<MealHistoryResponse> findAll(
-            String category,
-            Pageable pageable
-    ) {
-        Page<MealHistory> mealHistoryPage;
-
-        // 카테고리 값이 안들어왔다면, findAllByOrderByAteAtDescCreatedAtDesc()를 호출한다.
-        if (category == null || category.isBlank()) {
-            mealHistoryPage = mealHistoryRepository.findAllByOrderByAteAtDescCreatedAtDesc(pageable);
-        }
-        // 카테고리 값이 들어오면 이를 이용해 findAllByCategoryOrderByAteAtDescCreatedAtDesc()를 호출한다.
-        else {
-            // .strip()은 String내의 불필요한 공백을 줄여준다 예시로 "      한식 " 을 "한식"으로 만들어준다.
-            mealHistoryPage = mealHistoryRepository.findAllByCategoryOrderByAteAtDescCreatedAtDesc(category.strip(), pageable);
-        }
-
-        // 위에서 Page<MealHistory>를 만들었기때문에 이에 대해서 .map()을 하여 Page<MealHistoryResponse>를 만든다.
-        Page<MealHistoryResponse> page =
-                mealHistoryPage
-                        // Page에도 map 메서드가 존재하기 때문에 여기에 map 메서드를 사용할 수 있다. map() 을 통해 모든 mealHistory를 MealHistoryResponse로 변환한다.
-                        .map(MealHistoryResponse::from);
-
-        // Page<MealHistoryResponse>를 반환한다.
-        return PageResponse.from(page);
-    }
+//    @Transactional(readOnly = true)
+//    public PageResponse<MealHistoryResponse> findAll(
+//            String category,
+//            Pageable pageable
+//    ) {
+//        Page<MealHistory> mealHistoryPage;
+//
+//        // 카테고리 값이 안들어왔다면, findAllByOrderByAteAtDescCreatedAtDesc()를 호출한다.
+//        if (category == null || category.isBlank()) {
+//            mealHistoryPage = mealHistoryRepository.findAllByOrderByAteAtDescCreatedAtDesc(pageable);
+//        }
+//        // 카테고리 값이 들어오면 이를 이용해 findAllByCategoryOrderByAteAtDescCreatedAtDesc()를 호출한다.
+//        else {
+//            // .strip()은 String내의 불필요한 공백을 줄여준다 예시로 "      한식 " 을 "한식"으로 만들어준다.
+//            mealHistoryPage = mealHistoryRepository.findAllByCategoryOrderByAteAtDescCreatedAtDesc(category.strip(), pageable);
+//        }
+//
+//        // 위에서 Page<MealHistory>를 만들었기때문에 이에 대해서 .map()을 하여 Page<MealHistoryResponse>를 만든다.
+//        Page<MealHistoryResponse> page =
+//                mealHistoryPage
+//                        // Page에도 map 메서드가 존재하기 때문에 여기에 map 메서드를 사용할 수 있다. map() 을 통해 모든 mealHistory를 MealHistoryResponse로 변환한다.
+//                        .map(MealHistoryResponse::from);
+//
+//        // Page<MealHistoryResponse>를 반환한다.
+//        return PageResponse.from(page);
+//    }
 
     // 기간을 바탕으로 필터링 할 수 있는 기능을 추가한 findAll
     @Transactional(readOnly = true)
@@ -129,6 +130,12 @@ public class MealHistoryService {
             LocalDate to,
             Pageable pageable
     ) {
+        // findAll()에 인자로 들어온 from과 to를 비교한다. 만약 to가 from보다 앞선다면 Date범위에 대한 예외사항을 발생시킨다.
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new InvalidDateRangeException(from, to);
+        }
+
+
         // 삼항 연산자를 이용하여 category가 주어졌는지 여부를 판단하고, 만약에 없다면 null을 있다면 .strip()하여 저장
         String normalizedCategory =
                 category == null || category.isBlank()

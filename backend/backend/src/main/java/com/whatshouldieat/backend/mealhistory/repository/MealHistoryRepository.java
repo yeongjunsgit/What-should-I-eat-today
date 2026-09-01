@@ -39,17 +39,16 @@ public interface MealHistoryRepository
     // 페이징을 이용하기 위한 Repository 메서드로 Pageable을 인자로 받는다. 이때 Page에서 정한 제네릭 타입을 MealHistory로 한다.
     // Pageable은 페이지 조회 조건에 대한 정보를 담고 있다. (몇번째 페이지인지, 페이지 당 몇개를 조회하는지, 어떤 기준으로 정렬하는지)
     // 그러나 현재 메서드 명에서 정렬하는 기준을 적어 두었기 때문에, 따로 정렬기준은 제공하지 않는다.
-
-    Page<MealHistory> findAllByOrderByAteAtDescCreatedAtDesc(
-            Pageable pageable
-    );
+//    Page<MealHistory> findAllByOrderByAteAtDescCreatedAtDesc(
+//            Pageable pageable
+//    );
 
 
     // 해당 메서드는 category 값을 기준으로 필터링 한 결과값을 조회하는 메서드이다. 페이징이 구현되어야하여 Pageable 값을 받고, 필터링 기준인 category 값을 받는다.
-    Page<MealHistory> findAllByCategoryOrderByAteAtDescCreatedAtDesc(
-            String category,
-            Pageable pageable
-    );
+//    Page<MealHistory> findAllByCategoryOrderByAteAtDescCreatedAtDesc(
+//            String category,
+//            Pageable pageable
+//    );
 
     // 여태까지 위의 메소드들은 메소드의 이름을 보고 JPA가 Query문을 작성해주었다. 그렇기 때문에 별다른 SQL문을 작성하지 않아도 DB에서 값을 꺼내올 수 있었다.
     // 그러나, 조건이 너무 많아지면 메소드 명이 너무 길어지게 되고 이는 유지보수측면이나, 사용면에서 불편함을 일으킬 수 있다. 이를 방지하기 위해서 메소드명을 이용하지 않고

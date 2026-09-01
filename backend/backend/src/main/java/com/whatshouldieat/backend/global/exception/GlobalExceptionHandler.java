@@ -1,6 +1,7 @@
 package com.whatshouldieat.backend.global.exception;
 
 
+import com.whatshouldieat.backend.mealhistory.exception.InvalidDateRangeException;
 import com.whatshouldieat.backend.mealhistory.exception.MealHistoryNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -132,6 +133,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(response);
 
+    }
+
+    // 기간을 기준으로 필터링 할때 사용하는 from과 to의 값의 범위가 유효하지 않을때 발생하는 예외인 InvalidDateRangeException를 다루는 메서드
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDateRange(
+            InvalidDateRangeException exception
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ErrorResponse response = ErrorResponse.of(
+                status.value(),
+                "INVALID_DATE_RANGE",
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(response);
     }
 
 
