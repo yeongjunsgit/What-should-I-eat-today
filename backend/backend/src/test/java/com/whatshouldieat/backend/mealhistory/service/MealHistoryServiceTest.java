@@ -4,6 +4,7 @@ package com.whatshouldieat.backend.mealhistory.service;
 import com.whatshouldieat.backend.mealhistory.domain.MealHistory;
 import com.whatshouldieat.backend.mealhistory.dto.PageResponse;
 import com.whatshouldieat.backend.mealhistory.exception.InvalidDateRangeException;
+import com.whatshouldieat.backend.mealhistory.exception.MealHistoryNotFoundException;
 import com.whatshouldieat.backend.mealhistory.repository.MealHistoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -116,6 +119,34 @@ class MealHistoryServiceTest {
         assertThat(response.size()).isEqualTo(10);
         // 아무런 값도 존재하지 않는지 확인
         assertThat(response.totalElements()).isZero();
+
+    }
+
+    // 존재하지 않는 ID를 기반으로 findById를 호출했을때 정상적으로 의도한 예외가 나오는지 test하는 메서드
+    @Test
+    @DisplayName("")
+    void findByIdThrowsExceptionWhenMealHistoryDoesNotExist() {
+        // 랜덤한 ID 생성 (실제 DB를 사용하지는 않기 때문에, 의미를 둘 필요는 없다)
+        UUID id = UUID.randomUUID();
+
+        // when().thenReturn()을 통해 findById(id)가 호출되면 데이터가 없다는 의미인 Optional.empty()을 반환하게 한다.
+        when(mealHistoryRepository.findById(id))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(
+                // mealHistoryService.findById(id)를 호출
+                () -> mealHistoryService.findById(id)
+        )
+                // when().thenReturn()에 해당하는 호출을 했으므로,Optional.empty() 값이 반환되어 Thrown 될것이다.
+                // 이때 isInstanceOf()를 이용해 발생한 예외가 MealHistoryNotFoundException로 반환되는지 검증한다.
+                .isInstanceOf(MealHistoryNotFoundException.class)
+                // 예외와 같이 제공되는 에러 메세지에 id 값이 포함되어있는지 검증한다. (실제 코드에서 에러 메세지에 id 값을 추가하여 보내주고 있기 때문에 검증이 가능하다.)
+                .hasMessageContaining(id.toString());
+
+        // verify()를 이용하여 .findById(id)가 한번 호출된적이 있는지 검증한다.
+        // 위에서 mealHistoryService.findById()를 했으나, verify에서 mealHistoryRepository.findById()를 검증하는 이유는 Service에서 정상적으로
+        // Repository에 요청을 보냈는지 검증하기 위함이다.
+        verify(mealHistoryRepository).findById(id);
 
     }
 
